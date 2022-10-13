@@ -1,0 +1,6 @@
+5										
+547	Administracao – bacharel						2	1	2	1	1		
+552	ciencia biologicas – licenciatura				2	1	1	1	1				
+548	ciencias contabeis – bacharel					3	4	2	2	1			
+541	Direito – bacharel								2	1	1	1	1
+569	educacao fisica – licenciatura					2	1	1	1	1			
