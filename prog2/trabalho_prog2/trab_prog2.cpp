@@ -54,11 +54,9 @@ struct Acertos {
 void lerCursosPesos(FILE *arq, CursosPesos *vet, int n)
 {
 	for (int i = 0; i < n; i++) {
-		fscanf(arq, "%d %[^1234567890] %d %d %d %d %d", &vet[n].cod, vet[n].nomeCurso, &vet[n].red, &vet[n].mat, &vet[n].lin, &vet[n].hum, &vet[n].nat);	
-		printf("%d %s %d %d %d %d %d\n", vet[n].cod, vet[n].nomeCurso, vet[n].red, vet[n].mat, vet[n].lin, vet[n].hum, vet[n].nat);	
+		fscanf(arq, "%d %[^1234567890] %d %d %d %d %d", &vet[i].cod, vet[i].nomeCurso, &vet[i].red, &vet[i].mat, &vet[i].lin, &vet[i].hum, &vet[i].nat);	
+		printf("%d %s %d %d %d %d %d\n", vet[i].cod, vet[i].nomeCurso, vet[i].red, vet[i].mat, vet[i].lin, vet[i].hum, vet[i].nat);	
 	}
-	printf("\n\n%d\n", vet[2].cod);
-	
 }
 
 
@@ -68,18 +66,32 @@ int main() {
 	FILE *dados;
 	FILE *acertos;
 
+
 	
 	// Tratando o arquivo de cursos e pesos
+	struct CursosPesos *cursosPesosArray;
 	int n;
 	cursos_e_pesos = fopen("arqTeste.txt", "r");
 	if (cursos_e_pesos == NULL) printf("Nao foi possivel abrir o arquivo\n");
 	else {
 		fscanf(cursos_e_pesos, "%d", &n);
-		CursosPesos cursosPesosArray[n];
+
+		cursosPesosArray = (CursosPesos*) calloc (n, sizeof(CursosPesos));
+		if (cursosPesosArray == NULL) printf("Vetor nao pode ser alocado!\n");
+
 		lerCursosPesos(cursos_e_pesos, cursosPesosArray, n);
+		free(cursosPesosArray);
 		fclose(cursos_e_pesos);
-		printf("\n\n%d\n", cursosPesosArray[2].cod);
+		printf("\n\n");
+
 	}
+
+	for (int i = 0; i < n; i++) {
+		printf("%d %s %d %d %d %d %d\n", cursosPesosArray[i].cod, cursosPesosArray[i].nomeCurso, cursosPesosArray[i].red, cursosPesosArray[i].mat, cursosPesosArray[i].lin, cursosPesosArray[i].hum, cursosPesosArray[i].nat);
+	}
+
+
+	
 
 
   return 0;
