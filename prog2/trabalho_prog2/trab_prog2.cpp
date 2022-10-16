@@ -34,11 +34,16 @@ struct CursosVagas {
 };
 
 struct Dados {
-	int cod;
 	int num_candidato;
 	char nome[80];
 	Data nascimento;
 	char tipoVaga[3];
+};
+
+struct DadosTodosCursos {
+	int cod_curso;
+	int num_de_candidatos;
+	Dados *dadosCurso;
 };
 
 struct Acertos {
@@ -49,6 +54,14 @@ struct Acertos {
 	int V_HUM;
 	double RED;
 };
+
+void lerDados(FILE *arq, Dados *vet, int n)
+{
+	for (int i = 0; i < n; i++) {
+		fscanf(arq, "%d %[^1234567890] %d/%d/%d %s", &vet[i].num_candidato, vet[i].nome, &vet[i].nascimento.dia, &vet[i].nascimento.mes, &vet[i].nascimento.ano, vet[i].tipoVaga);
+		//printf("%d - %d %s %d/%d/%d %s\n", i, vet[i].num_candidato, vet[i].nome, vet[i].nascimento.dia, vet[i].nascimento.mes, vet[i].nascimento.ano, vet[i].tipoVaga);
+	}
+}
 
 void lerCursosVagas(FILE *arq, CursosVagas *vet, int n)
 {
@@ -73,7 +86,39 @@ int main() {
 	FILE *dados;
 	FILE *acertos;
 
+	// Tratando o arquivo de dados;
+	struct DadosTodosCursos *dadosTodosCursos;
+	struct Dados *dadosArray;
+	int ND, codigo_do_curso;
+	dados = fopen("dados.txt", "r");
+	if (dados == NULL) printf("Nao foi possivel abrir o arquivo de dados.txt\n");
+	else {
 
+		dadosTodosCursos = (DadosTodosCursos*) calloc (113, sizeof(DadosTodosCursos));
+		if ( dadosTodosCursos ==  NULL) printf("vetor gigante de dados de todos os cursos nao pode ser alocado\n");
+		int indice = 0;
+		while( feof(dados) == 0) {
+
+			fscanf(dados, "%d %d", &codigo_do_curso, &ND);
+			dadosArray = (Dados*) calloc (ND, sizeof(Dados));
+			if (dadosArray == NULL) printf("Vetor de dados não pode ser alocado!\n");
+			lerDados(dados, dadosArray, ND);
+
+			dadosTodosCursos[indice].cod_curso = codigo_do_curso;
+			dadosTodosCursos[indice].num_de_candidatos = ND;
+			dadosTodosCursos[indice].dadosCurso = dadosArray;
+			free(dadosArray);
+			indice++;
+		}
+		fclose(dados);
+		
+		printf("\n\n");
+		
+		printf("%d %d %d %s %d/%d/%d %s\n", dadosTodosCursos[1].cod_curso, dadosTodosCursos[1].num_de_candidatos, dadosTodosCursos[1].dadosCurso[0].num_candidato, dadosTodosCursos[1].dadosCurso[0].nome, dadosTodosCursos[1].dadosCurso[0].nascimento.dia, dadosTodosCursos[1].dadosCurso[0].nascimento.mes, dadosTodosCursos[1].dadosCurso[0].nascimento.ano, dadosTodosCursos[1].dadosCurso[0].tipoVaga);
+	}
+	
+
+	 free(dadosTodosCursos);
 	
 	// // Tratando o arquivo de cursos e pesos
 	// struct CursosPesos *cursosPesosArray;
@@ -84,26 +129,26 @@ int main() {
 	// 	fscanf(cursos_e_pesos, "%d", &NCP);
 
 	// 	cursosPesosArray = (CursosPesos*) calloc (NCP, sizeof(CursosPesos));
-	// 	if (cursosPesosArray == NULL) printf("Vetor nao pode ser alocado!\n");
+	// 	if (cursosPesosArray == NULL) printf("Vetor de cursos e pesos nao pode ser alocado!\n");
 
 	// 	lerCursosPesos(cursos_e_pesos, cursosPesosArray, NCP);
 	// 	fclose(cursos_e_pesos);
 	// }
 	// free(cursosPesosArray);
 
-	// Tratando arquivo de cursos e vagas
-	struct CursosVagas *cursosVagasArray;
-	int NCV;
-	cursos_e_vagas = fopen("cursos_e_vagas.txt", "r");
-	if (cursos_e_vagas == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_vagas.txt\n");
-	else {
-		fscanf(cursos_e_vagas, "%d", &NCV);
-		cursosVagasArray = (CursosVagas*) calloc (NCV, sizeof(CursosVagas));
-		lerCursosVagas(cursos_e_vagas, cursosVagasArray, NCV);
-		fclose(cursos_e_vagas);
-	}
-
-	free(cursosVagasArray);
+	// // Tratando arquivo de cursos e vagas
+	// struct CursosVagas *cursosVagasArray;
+	// int NCV;
+	// cursos_e_vagas = fopen("cursos_e_vagas.txt", "r");
+	// if (cursos_e_vagas == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_vagas.txt\n");
+	// else {
+	// 	fscanf(cursos_e_vagas, "%d", &NCV);
+	// 	cursosVagasArray = (CursosVagas*) calloc (NCV, sizeof(CursosVagas));
+	//  if (cursosVagasArray == NULL) printf("Vetor de cursos e vagas nao pode ser alocado\n");
+	// 	lerCursosVagas(cursos_e_vagas, cursosVagasArray, NCV);
+	// 	fclose(cursos_e_vagas);
+	// }
+	// free(cursosVagasArray);
 
   return 0;
 }
