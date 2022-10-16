@@ -50,6 +50,13 @@ struct Acertos {
 	double RED;
 };
 
+void lerCursosVagas(FILE *arq, CursosVagas *vet, int n)
+{
+	for (int i = 0; i < n; i++) {
+		fscanf(arq, "%d %d %d %d %d %d %d %d %d %d %d %d", &vet[i].cod, &vet[i].AC, &vet[i].L1, &vet[i].L3, &vet[i].L4, &vet[i].L5, &vet[i].L7, &vet[i].L8, &vet[i].L9, &vet[i].L11, &vet[i].L13, &vet[i].L15);
+		printf("%d %d %d %d %d %d %d %d %d %d %d %d\n", vet[i].cod, vet[i].AC, vet[i].L1, vet[i].L3, vet[i].L4, vet[i].L5, vet[i].L7, vet[i].L8, vet[i].L9, vet[i].L11, vet[i].L13, vet[i].L15);
+	}
+}
 
 void lerCursosPesos(FILE *arq, CursosPesos *vet, int n)
 {
@@ -68,26 +75,35 @@ int main() {
 
 
 	
-	// Tratando o arquivo de cursos e pesos
-	struct CursosPesos *cursosPesosArray;
-	int n;
-	cursos_e_pesos = fopen("arqTeste.txt", "r");
-	if (cursos_e_pesos == NULL) printf("Nao foi possivel abrir o arquivo\n");
+	// // Tratando o arquivo de cursos e pesos
+	// struct CursosPesos *cursosPesosArray;
+	// int NCP;
+	// cursos_e_pesos = fopen("cursos_e_pesos.txt", "r");
+	// if (cursos_e_pesos == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_pesos.txt\n");
+	// else {
+	// 	fscanf(cursos_e_pesos, "%d", &NCP);
+
+	// 	cursosPesosArray = (CursosPesos*) calloc (NCP, sizeof(CursosPesos));
+	// 	if (cursosPesosArray == NULL) printf("Vetor nao pode ser alocado!\n");
+
+	// 	lerCursosPesos(cursos_e_pesos, cursosPesosArray, NCP);
+	// 	fclose(cursos_e_pesos);
+	// }
+	// free(cursosPesosArray);
+
+	// Tratando arquivo de cursos e vagas
+	struct CursosVagas *cursosVagasArray;
+	int NCV;
+	cursos_e_vagas = fopen("cursos_e_vagas.txt", "r");
+	if (cursos_e_vagas == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_vagas.txt\n");
 	else {
-		fscanf(cursos_e_pesos, "%d", &n);
-
-		cursosPesosArray = (CursosPesos*) calloc (n, sizeof(CursosPesos));
-		if (cursosPesosArray == NULL) printf("Vetor nao pode ser alocado!\n");
-
-		lerCursosPesos(cursos_e_pesos, cursosPesosArray, n);
-		fclose(cursos_e_pesos);
-		printf("\n\n");
-
+		fscanf(cursos_e_vagas, "%d", &NCV);
+		cursosVagasArray = (CursosVagas*) calloc (NCV, sizeof(CursosVagas));
+		lerCursosVagas(cursos_e_vagas, cursosVagasArray, NCV);
+		fclose(cursos_e_vagas);
 	}
 
-	for (int i = 0; i < n; i++) {
-		printf("%d %s %d %d %d %d %d\n", cursosPesosArray[i].cod, cursosPesosArray[i].nomeCurso, cursosPesosArray[i].red, cursosPesosArray[i].mat, cursosPesosArray[i].lin, cursosPesosArray[i].hum, cursosPesosArray[i].nat);
-	}
-	free(cursosPesosArray);
+	free(cursosVagasArray);
+
   return 0;
 }
