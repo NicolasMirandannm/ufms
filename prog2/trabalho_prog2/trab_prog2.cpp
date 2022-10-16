@@ -80,7 +80,6 @@ int main() {
 		if (cursosPesosArray == NULL) printf("Vetor nao pode ser alocado!\n");
 
 		lerCursosPesos(cursos_e_pesos, cursosPesosArray, n);
-		free(cursosPesosArray);
 		fclose(cursos_e_pesos);
 		printf("\n\n");
 
@@ -89,10 +88,6 @@ int main() {
 	for (int i = 0; i < n; i++) {
 		printf("%d %s %d %d %d %d %d\n", cursosPesosArray[i].cod, cursosPesosArray[i].nomeCurso, cursosPesosArray[i].red, cursosPesosArray[i].mat, cursosPesosArray[i].lin, cursosPesosArray[i].hum, cursosPesosArray[i].nat);
 	}
-
-
-	
-
-
+	free(cursosPesosArray);
   return 0;
 }
