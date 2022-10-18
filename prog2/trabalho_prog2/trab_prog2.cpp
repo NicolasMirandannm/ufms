@@ -79,62 +79,62 @@ void lerCursosPesos(FILE *arq, CursosPesos *vet, int n)
 	}
 }
 
-
-int main() {
-	FILE *cursos_e_pesos;
-	FILE *cursos_e_vagas;
+void lerArquivoDados(DadosTodosCursos *vet)
+{
 	FILE *dados;
-	FILE *acertos;
-
-	// Tratando o arquivo de dados;
-	struct DadosTodosCursos *dadosTodosCursos;
-	struct Dados *dadosArray;
-	int ND, codigo_do_curso;
+	int indice = 0;
 	dados = fopen("dados.txt", "r");
 	if (dados == NULL) printf("Nao foi possivel abrir o arquivo de dados.txt\n");
 	else {
-
-		dadosTodosCursos = (DadosTodosCursos*) calloc (113, sizeof(DadosTodosCursos));
-		if ( dadosTodosCursos ==  NULL) printf("vetor gigante de dados de todos os cursos nao pode ser alocado\n");
-		int indice = 0;
-		while( feof(dados) == 0) {
-
-			fscanf(dados, "%d %d", &codigo_do_curso, &ND);
-			dadosArray = (Dados*) calloc (ND, sizeof(Dados));
-			if (dadosArray == NULL) printf("Vetor de dados não pode ser alocado!\n");
-			lerDados(dados, dadosArray, ND);
-
-			dadosTodosCursos[indice].cod_curso = codigo_do_curso;
-			dadosTodosCursos[indice].num_de_candidatos = ND;
-			dadosTodosCursos[indice].dadosCurso = dadosArray;
-			free(dadosArray);
+		while( feof(dados) == 0 ) {
+			fscanf(dados, "%d %d", &vet[indice].cod_curso, &vet[indice].num_de_candidatos);
+			vet[indice].dadosCurso = (Dados*) calloc (vet[indice].num_de_candidatos, sizeof(Dados));
+			if (vet[indice].dadosCurso == NULL) printf("Vetor de dados não pode ser alocado!\n");
+			lerDados(dados, vet[indice].dadosCurso, vet[indice].num_de_candidatos);
 			indice++;
 		}
-		fclose(dados);
-		
-		printf("\n\n");
-		
-		printf("%d %d %d %s %d/%d/%d %s\n", dadosTodosCursos[1].cod_curso, dadosTodosCursos[1].num_de_candidatos, dadosTodosCursos[1].dadosCurso[0].num_candidato, dadosTodosCursos[1].dadosCurso[0].nome, dadosTodosCursos[1].dadosCurso[0].nascimento.dia, dadosTodosCursos[1].dadosCurso[0].nascimento.mes, dadosTodosCursos[1].dadosCurso[0].nascimento.ano, dadosTodosCursos[1].dadosCurso[0].tipoVaga);
 	}
+	fclose(dados);
+}
+
+void lerArquivoCursosPesos(CursosPesos *vet)
+{
+	FILE *cursos_e_pesos = fopen("cursos_e_pesos.txt", "r");
+	if (cursos_e_pesos == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_pesos.txt\n");
+	else {
+		int n;
+		fscanf(cursos_e_pesos, "%d", &n);
+		vet = (CursosPesos*) calloc (n, sizeof(CursosPesos));
+		if (vet == NULL) printf("Vetor de cursos e pesos nao pode ser alocado!\n");
+		lerCursosPesos(cursos_e_pesos, vet, n);
+		fclose(cursos_e_pesos);
+	}
+}
+
+
+int main() {
+
+	// // Tratando o arquivo de dados;
+	// struct DadosTodosCursos *dadosTodosCursos;
+	// dadosTodosCursos = (DadosTodosCursos*) calloc (113, sizeof(DadosTodosCursos));
+	// if ( dadosTodosCursos ==  NULL) printf("vetor gigante de dados de todos os cursos nao pode ser alocado\n");
+	// lerArquivoDados(dadosTodosCursos);
+	// printf("\n\n");
+	// printf("%d %d %d %s %d/%d/%d %s\n", dadosTodosCursos[0].cod_curso, dadosTodosCursos[0].num_de_candidatos, dadosTodosCursos[0].dadosCurso[0].num_candidato, dadosTodosCursos[0].dadosCurso[0].nome, dadosTodosCursos[0].dadosCurso[0].nascimento.dia, dadosTodosCursos[0].dadosCurso[0].nascimento.mes, dadosTodosCursos[0].dadosCurso[0].nascimento.ano, dadosTodosCursos[0].dadosCurso[0].tipoVaga);
+	// free(dadosTodosCursos);
 	
 
-	 free(dadosTodosCursos);
+
+	// Tratando o arquivo de cursos e pesos
+	struct CursosPesos *cursosPesosArray;
+	lerArquivoCursosPesos(cursosPesosArray);	
 	
-	// // Tratando o arquivo de cursos e pesos
-	// struct CursosPesos *cursosPesosArray;
-	// int NCP;
-	// cursos_e_pesos = fopen("cursos_e_pesos.txt", "r");
-	// if (cursos_e_pesos == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_pesos.txt\n");
-	// else {
-	// 	fscanf(cursos_e_pesos, "%d", &NCP);
 
-	// 	cursosPesosArray = (CursosPesos*) calloc (NCP, sizeof(CursosPesos));
-	// 	if (cursosPesosArray == NULL) printf("Vetor de cursos e pesos nao pode ser alocado!\n");
+	printf("%d %s %d %d %d %d %d\n", cursosPesosArray[1].cod, cursosPesosArray[1].nomeCurso, cursosPesosArray[1].red, cursosPesosArray[1].mat, cursosPesosArray[1].lin, cursosPesosArray[1].hum, cursosPesosArray[1].nat);	
 
-	// 	lerCursosPesos(cursos_e_pesos, cursosPesosArray, NCP);
-	// 	fclose(cursos_e_pesos);
-	// }
-	// free(cursosPesosArray);
+	free(cursosPesosArray);
+
+
 
 	// // Tratando arquivo de cursos e vagas
 	// struct CursosVagas *cursosVagasArray;
