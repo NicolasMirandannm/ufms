@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define length(x) (int) (sizeof(x) / sizeof (x[0])) 
 
@@ -32,6 +33,10 @@ int main() {
 
 	int a[19];
 	int n = length(a);
+
+	int z = 2;
+
+	printf("%d\n", (int)pow(z, 10));
 
 	printf("tamanho do vetor 'a': %d\n", n);
 	return 0;

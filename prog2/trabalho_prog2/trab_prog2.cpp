@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define length(x) (int) (sizeof(x) / sizeof (x[0])) 
 
@@ -57,6 +58,13 @@ struct Acertos {
 	double RED;
 };
 
+struct MediaEdp {
+	double lin;
+	double mat;
+	double nat;
+	double hum;
+};
+
 //tratamento do arquivo acertos.txt
 void leArquivosAcertos(FILE *arq, Acertos *vet, int n);
 void lerArrayAcertos(Acertos *&vet);
@@ -77,7 +85,7 @@ void lerArrayCursosPesos(CursosPesos *&vet);
 void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, CursosVagas *cursosVagas, CursosPesos *cursosPesos);
 
 //calculo de media e desvio padrao
-void calcMediaAndDesvioPadrao(Acertos *vet, int n, Acertos *media, Acertos *desvioPadrao);
+void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *desvioPadrao);
 
 
 
@@ -93,6 +101,14 @@ int main() {
 	lerArrayDados(dadosTodosCursosArray);
 	lerArrayCursosVagas(cursosVagasArray);
 	lerArrayCursosPesos(cursosPesosArray);
+
+
+	struct MediaEdp media, desvioPadrao;
+	calcMediaAndDesvioPadrao(acertosArray, length(acertosArray), &media, &desvioPadrao);
+
+	printf("media de V_LIN = %.2lf\nmedia de V_MAT = %.2lf\nmedia de V_NAT = %.2lf\nmedia de V_HUM = %.2lf\n\n", media.lin, media.mat, media.nat, media.hum);
+
+	printf("desvioPadrao de V_LIN = %.2lf\ndesvioPadrao de V_MAT = %.2lf\ndesvioPadrao de V_NAT = %.2lf\ndesvioPadrao de V_HUM = %.2lf\n\n", desvioPadrao.lin, desvioPadrao.mat, desvioPadrao.nat, desvioPadrao.hum);
 
 
 
@@ -225,23 +241,38 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 }
 
 //calculo de media e desvio padrao
-void calcMediaAndDesvioPadrao(Acertos *vet, int n, Acertos *media, Acertos *desvioPadrao)
+void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *desvioPadrao)
 {
-	media->V_LIN = 0;
-	media->V_MAT = 0;
-	media->V_NAT = 0;
-	media->V_HUM = 0;
+	media->lin = 0.0;
+	media->mat = 0.0;
+	media->nat = 0.0;
+	media->hum = 0.0;
+
+	desvioPadrao->lin = 0;
+	desvioPadrao->mat = 0;
+	desvioPadrao->nat = 0;
+	desvioPadrao->hum = 0;
 
 	for (int i = 0; i < n; i++) {
-		media->V_LIN += vet[i].V_LIN;
-		media->V_MAT += vet[i].V_MAT;
-		media->V_NAT += vet[i].V_NAT;
-		media->V_HUM += vet[i].V_HUM;
+		media->lin += vet[i].V_LIN;
+		media->mat += vet[i].V_MAT;
+		media->nat += vet[i].V_NAT;
+		media->hum += vet[i].V_HUM;
 	}
-	media->V_LIN /= n;
-	media->V_MAT /= n;
-	media->V_NAT /= n;
-	media->V_HUM /= n;
+	media->lin /= n;
+	media->mat /= n;
+	media->nat /= n;
+	media->hum /= n;
 
+	for (int i = 0; i < n; i++) {
+		desvioPadrao->lin += pow(vet[i].V_LIN - media->lin, 2);
+		desvioPadrao->mat += pow(vet[i].V_MAT - media->mat, 2);
+		desvioPadrao->nat += pow(vet[i].V_NAT - media->nat, 2);
+		desvioPadrao->hum += pow(vet[i].V_HUM - media->hum, 2);
+	}
 
+	desvioPadrao->lin = sqrt(desvioPadrao->lin / (n - 1)); 
+	desvioPadrao->mat = sqrt(desvioPadrao->mat / (n - 1));
+	desvioPadrao->nat = sqrt(desvioPadrao->nat / (n - 1));
+	desvioPadrao->hum = sqrt(desvioPadrao->hum / (n - 1));
 }
