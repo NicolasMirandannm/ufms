@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define length(x) (int) (sizeof(x) / sizeof (x[0])) 
+
 struct Data {
 	int dia;
 	int mes;
@@ -74,6 +76,9 @@ void lerArrayCursosPesos(CursosPesos *&vet);
 //desalocando vetores
 void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, CursosVagas *cursosVagas, CursosPesos *cursosPesos);
 
+//calculo de media e desvio padrao
+void calcMediaAndDesvioPadrao(Acertos *vet, int n, Acertos *media, Acertos *desvioPadrao);
+
 
 
 
@@ -89,59 +94,10 @@ int main() {
 	lerArrayCursosVagas(cursosVagasArray);
 	lerArrayCursosPesos(cursosPesosArray);
 
-	int i = 0;
-	printf("\n");
-	printf("cursos e vagas posicao 0 -> ");
-	printf("%d %d %d %d %d %d %d %d %d %d %d %d\n", 
-		cursosVagasArray[i].cod, 
-		cursosVagasArray[i].AC, 
-		cursosVagasArray[i].L1, 
-		cursosVagasArray[i].L3, 
-		cursosVagasArray[i].L4, 
-		cursosVagasArray[i].L5, 
-		cursosVagasArray[i].L7, 
-		cursosVagasArray[i].L8, 
-		cursosVagasArray[i].L9, 
-		cursosVagasArray[i].L11, 
-		cursosVagasArray[i].L13, 
-		cursosVagasArray[i].L15);
 
-	printf("\n\n");
-	printf("acertos posicao 0 -> ");
-	printf("%d %d %d %d %d %lf", 
-		acertosArray[i].INS, 
-		acertosArray[i].V_LIN, 
-		acertosArray[i].V_MAT, 
-		acertosArray[i].V_NAT, 
-		acertosArray[i].V_HUM, 
-		acertosArray[i].RED);
 
-	printf("\n\n");
-	printf("dados todos cursos posicao 0 -> ");
-	printf("%d %d - %d %s %d/%d/%d %s\n", 
-		dadosTodosCursosArray[i].cod_curso,
-		dadosTodosCursosArray[i].num_de_candidatos , 
-		dadosTodosCursosArray[i].dadosCurso[i].num_candidato, 
-		dadosTodosCursosArray[i].dadosCurso[i].nome, 
-		dadosTodosCursosArray[i].dadosCurso[i].nascimento.dia, 
-		dadosTodosCursosArray[i].dadosCurso[i].nascimento.mes, 
-		dadosTodosCursosArray[i].dadosCurso[i].nascimento.ano, 
-		dadosTodosCursosArray[i].dadosCurso[i].tipoVaga);
-
-	printf("\n\n");
-	printf("cursos e pesos posicao 0 -> ");
-	printf("%d %s %d %d %d %d %d\n", 
-		cursosPesosArray[i].cod, 
-		cursosPesosArray[i].nomeCurso, 
-		cursosPesosArray[i].red, 
-		cursosPesosArray[i].mat, 
-		cursosPesosArray[i].lin, 
-		cursosPesosArray[i].hum, 
-		cursosPesosArray[i].nat);
 
 	desalocaTodosArrays(acertosArray, dadosTodosCursosArray, cursosVagasArray, cursosPesosArray);
-
-
   return 0;
 }
 
@@ -266,4 +222,26 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 	free(dadosTodosCursos);
 	free(cursosVagas);
 	free(cursosPesos);
+}
+
+//calculo de media e desvio padrao
+void calcMediaAndDesvioPadrao(Acertos *vet, int n, Acertos *media, Acertos *desvioPadrao)
+{
+	media->V_LIN = 0;
+	media->V_MAT = 0;
+	media->V_NAT = 0;
+	media->V_HUM = 0;
+
+	for (int i = 0; i < n; i++) {
+		media->V_LIN += vet[i].V_LIN;
+		media->V_MAT += vet[i].V_MAT;
+		media->V_NAT += vet[i].V_NAT;
+		media->V_HUM += vet[i].V_HUM;
+	}
+	media->V_LIN /= n;
+	media->V_MAT /= n;
+	media->V_NAT /= n;
+	media->V_HUM /= n;
+
+
 }
