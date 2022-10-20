@@ -55,47 +55,18 @@ struct Acertos {
 	double RED;
 };
 
-void lerDados(FILE *arq, Dados *vet, int n)
-{
-	for (int i = 0; i < n; i++) {
-		fscanf(arq, "%d %[^1234567890] %d/%d/%d %s", &vet[i].num_candidato, vet[i].nome, &vet[i].nascimento.dia, &vet[i].nascimento.mes, &vet[i].nascimento.ano, vet[i].tipoVaga);
-		//printf("%d - %d %s %d/%d/%d %s\n", i, vet[i].num_candidato, vet[i].nome, vet[i].nascimento.dia, vet[i].nascimento.mes, vet[i].nascimento.ano, vet[i].tipoVaga);
-	}
-}
+void leArquivosAcertos(FILE *arq, Acertos *vet, int n);
+void lerArrayAcertos(Acertos *&vet);
 
-void lerCursosVagas(FILE *arq, CursosVagas *vet, int n)
-{
-	for (int i = 0; i < n; i++) {
-		fscanf(arq, "%d %d %d %d %d %d %d %d %d %d %d %d", &vet[i].cod, &vet[i].AC, &vet[i].L1, &vet[i].L3, &vet[i].L4, &vet[i].L5, &vet[i].L7, &vet[i].L8, &vet[i].L9, &vet[i].L11, &vet[i].L13, &vet[i].L15);
-		printf("%d %d %d %d %d %d %d %d %d %d %d %d\n", vet[i].cod, vet[i].AC, vet[i].L1, vet[i].L3, vet[i].L4, vet[i].L5, vet[i].L7, vet[i].L8, vet[i].L9, vet[i].L11, vet[i].L13, vet[i].L15);
-	}
-}
 
-void lerCursosPesos(FILE *arq, CursosPesos *vet, int n)
-{
-	for (int i = 0; i < n; i++) {
-		fscanf(arq, "%d %[^1234567890] %d %d %d %d %d", &vet[i].cod, vet[i].nomeCurso, &vet[i].red, &vet[i].mat, &vet[i].lin, &vet[i].hum, &vet[i].nat);	
-		printf("%d %s %d %d %d %d %d\n", vet[i].cod, vet[i].nomeCurso, vet[i].red, vet[i].mat, vet[i].lin, vet[i].hum, vet[i].nat);	
-	}
-}
 
-void lerArquivoDados(DadosTodosCursos *vet)
-{
-	FILE *dados;
-	int indice = 0;
-	dados = fopen("dados.txt", "r");
-	if (dados == NULL) printf("Nao foi possivel abrir o arquivo de dados.txt\n");
-	else {
-		while( feof(dados) == 0 ) {
-			fscanf(dados, "%d %d", &vet[indice].cod_curso, &vet[indice].num_de_candidatos);
-			vet[indice].dadosCurso = (Dados*) calloc (vet[indice].num_de_candidatos, sizeof(Dados));
-			if (vet[indice].dadosCurso == NULL) printf("Vetor de dados não pode ser alocado!\n");
-			lerDados(dados, vet[indice].dadosCurso, vet[indice].num_de_candidatos);
-			indice++;
-		}
-	}
-	fclose(dados);
-}
+
+void lerDados(FILE *arq, Dados *vet, int n);
+void lerCursosVagas(FILE *arq, CursosVagas *vet, int n);
+void lerCursosPesos(FILE *arq, CursosPesos *vet, int n);
+void lerArquivoDados(DadosTodosCursos *&vet);
+
+
 
 void lerArquivoCursosPesos(CursosPesos *vet)
 {
@@ -114,6 +85,14 @@ void lerArquivoCursosPesos(CursosPesos *vet)
 
 int main() {
 
+	struct Acertos *arrayAcertos;
+	lerArrayAcertos(arrayAcertos);
+
+	printf("\n\n");
+
+	printf("%d %d %d %d %d %.2lf", arrayAcertos[0].INS, arrayAcertos[0].V_LIN, arrayAcertos[0].V_MAT, arrayAcertos[0].V_NAT, arrayAcertos[0].V_HUM, 
+		arrayAcertos[0].RED);
+
 	// // Tratando o arquivo de dados;
 	// struct DadosTodosCursos *dadosTodosCursos;
 	// dadosTodosCursos = (DadosTodosCursos*) calloc (113, sizeof(DadosTodosCursos));
@@ -125,14 +104,14 @@ int main() {
 	
 
 
-	// Tratando o arquivo de cursos e pesos
-	struct CursosPesos *cursosPesosArray;
-	lerArquivoCursosPesos(cursosPesosArray);	
+	// // Tratando o arquivo de cursos e pesos
+	// struct CursosPesos *cursosPesosArray;
+	// lerArquivoCursosPesos(cursosPesosArray);	
 	
 
-	printf("%d %s %d %d %d %d %d\n", cursosPesosArray[1].cod, cursosPesosArray[1].nomeCurso, cursosPesosArray[1].red, cursosPesosArray[1].mat, cursosPesosArray[1].lin, cursosPesosArray[1].hum, cursosPesosArray[1].nat);	
+	// printf("%d %s %d %d %d %d %d\n", cursosPesosArray[1].cod, cursosPesosArray[1].nomeCurso, cursosPesosArray[1].red, cursosPesosArray[1].mat, cursosPesosArray[1].lin, cursosPesosArray[1].hum, cursosPesosArray[1].nat);	
 
-	free(cursosPesosArray);
+	// free(cursosPesosArray);
 
 
 
@@ -151,4 +130,70 @@ int main() {
 	// free(cursosVagasArray);
 
   return 0;
+}
+
+void lerArquivoDados(DadosTodosCursos *&vet)
+{
+	FILE *dados;
+	int indice = 0;
+	dados = fopen("dados.txt", "r");
+	if (dados == NULL) printf("Nao foi possivel abrir o arquivo de dados.txt\n");
+	else {
+		while( feof(dados) == 0 ) {
+			fscanf(dados, "%d %d", &vet[indice].cod_curso, &vet[indice].num_de_candidatos);
+			vet[indice].dadosCurso = (Dados*) calloc (vet[indice].num_de_candidatos, sizeof(Dados));
+			if (vet[indice].dadosCurso == NULL) printf("Vetor de dados não pode ser alocado!\n");
+			lerDados(dados, vet[indice].dadosCurso, vet[indice].num_de_candidatos);
+			indice++;
+		}
+	}
+	fclose(dados);
+}
+
+void lerCursosPesos(FILE *arq, CursosPesos *vet, int n)
+{
+	for (int i = 0; i < n; i++) {
+		fscanf(arq, "%d %[^1234567890] %d %d %d %d %d", &vet[i].cod, vet[i].nomeCurso, &vet[i].red, &vet[i].mat, &vet[i].lin, &vet[i].hum, &vet[i].nat);	
+		printf("%d %s %d %d %d %d %d\n", vet[i].cod, vet[i].nomeCurso, vet[i].red, vet[i].mat, vet[i].lin, vet[i].hum, vet[i].nat);	
+	}
+}
+
+void lerCursosVagas(FILE *arq, CursosVagas *vet, int n)
+{
+	for (int i = 0; i < n; i++) {
+		fscanf(arq, "%d %d %d %d %d %d %d %d %d %d %d %d", &vet[i].cod, &vet[i].AC, &vet[i].L1, &vet[i].L3, &vet[i].L4, &vet[i].L5, &vet[i].L7, &vet[i].L8, &vet[i].L9, &vet[i].L11, &vet[i].L13, &vet[i].L15);
+		printf("%d %d %d %d %d %d %d %d %d %d %d %d\n", vet[i].cod, vet[i].AC, vet[i].L1, vet[i].L3, vet[i].L4, vet[i].L5, vet[i].L7, vet[i].L8, vet[i].L9, vet[i].L11, vet[i].L13, vet[i].L15);
+	}
+}
+
+void lerDados(FILE *arq, Dados *vet, int n)
+{
+	for (int i = 0; i < n; i++) {
+		fscanf(arq, "%d %[^1234567890] %d/%d/%d %s", &vet[i].num_candidato, vet[i].nome, &vet[i].nascimento.dia, &vet[i].nascimento.mes, &vet[i].nascimento.ano, vet[i].tipoVaga);
+		//printf("%d - %d %s %d/%d/%d %s\n", i, vet[i].num_candidato, vet[i].nome, vet[i].nascimento.dia, vet[i].nascimento.mes, vet[i].nascimento.ano, vet[i].tipoVaga);
+	}
+}
+
+void leArquivosAcertos(FILE *arq, Acertos *vet, int n)
+{
+	for (int i = 0; i < n; i++) {
+		fscanf(arq, "%d %d %d %d %d %lf", &vet[i].INS, &vet[i].V_LIN, &vet[i].V_MAT, &vet[i].V_NAT, &vet[i].V_HUM, &vet[i].RED);
+		printf("%d %d %d %d %d %lf", vet[i].INS, vet[i].V_LIN, vet[i].V_MAT, vet[i].V_NAT, vet[i].V_HUM, vet[i].RED);
+	}
+}
+
+void lerArrayAcertos(Acertos *&vet)
+{
+	FILE *acertos = fopen("acertos.txt", "r");
+	if(acertos == NULL) printf("Nao foi possivel abrir o arquivo acertos.txt\n");
+	else {
+		int n;
+		fscanf(acertos, "%d", &n);
+		vet = (Acertos*) calloc (n, sizeof(Acertos));
+		if(vet == NULL) printf("Vetor de acertos nao pode ser alocado\n");
+		else {
+			leArquivosAcertos(acertos, vet, n);
+			fclose(acertos);
+		}
+	}
 }
