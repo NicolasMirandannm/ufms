@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-#define length(x) (int) (sizeof(x) / sizeof (x[0])) 
 
 struct Data {
 	int dia;
@@ -65,21 +64,33 @@ struct MediaEdp {
 	double hum;
 };
 
+struct compNotas {
+	int INSC;
+	double V_LIN;
+	double V_MAT;
+	double V_NAT;
+	double V_HUM;
+	double RED;
+	char cota[3];
+	double NotaFinal;
+	int classificacao;
+};
+
 //tratamento do arquivo acertos.txt
 void leArquivosAcertos(FILE *arq, Acertos *vet, int n);
-void lerArrayAcertos(Acertos *&vet);
+void lerArrayAcertos(Acertos *&vet, int *tamanho);
 
 //tratamento do arquivo dados.txt
 void lerArquivoDados(FILE *arq, Dados *vet, int n);
-void lerArrayDados(DadosTodosCursos *&vet);
+void lerArrayDados(DadosTodosCursos *&vet, int *tamanho);
 
 //tratamento do arquivo cursos_e_vagas.txt
 void lerArquivoCursosVagas(FILE *arq, CursosVagas *vet, int n);
-void lerArrayCursosVagas(CursosVagas *&vet);
+void lerArrayCursosVagas(CursosVagas *&vet, int *tamanho);
 
 //tratamento do arquivo cursos_e_pesos.txt
 void lerArquivoCursosPesos(FILE *arq, CursosPesos *vet, int n);
-void lerArrayCursosPesos(CursosPesos *&vet);
+void lerArrayCursosPesos(CursosPesos *&vet, int *tamanho);
 
 //desalocando vetores
 void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, CursosVagas *cursosVagas, CursosPesos *cursosPesos);
@@ -87,24 +98,34 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 //calculo de media e desvio padrao
 void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *desvioPadrao);
 
-
-
+//criação de um array para computaçaõ e lançamento de nota de cada inscrito
+void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp);
+double EP(int valor, double media, double desvioPd);
 
 
 int main() {
 	struct CursosVagas *cursosVagasArray;
-	struct Acertos *acertosArray;
-	struct DadosTodosCursos *dadosTodosCursosArray;
-	struct CursosPesos *cursosPesosArray;
+	int N_CV;
 
-	lerArrayAcertos(acertosArray);
-	lerArrayDados(dadosTodosCursosArray);
-	lerArrayCursosVagas(cursosVagasArray);
-	lerArrayCursosPesos(cursosPesosArray);
+	struct Acertos *acertosArray;
+	int N_A;
+
+	struct DadosTodosCursos *dadosTodosCursosArray;
+	int N_DTC;
+
+	struct CursosPesos *cursosPesosArray;
+	int N_CP;
+
+	lerArrayAcertos(acertosArray, &N_A);
+	lerArrayDados(dadosTodosCursosArray, &N_DTC);
+	lerArrayCursosVagas(cursosVagasArray, &N_CV);
+	lerArrayCursosPesos(cursosPesosArray, &N_CP);
+
+
 
 
 	struct MediaEdp media, desvioPadrao;
-	calcMediaAndDesvioPadrao(acertosArray, length(acertosArray), &media, &desvioPadrao);
+	calcMediaAndDesvioPadrao(acertosArray, N_A, &media, &desvioPadrao);
 
 	printf("media de V_LIN = %.2lf\nmedia de V_MAT = %.2lf\nmedia de V_NAT = %.2lf\nmedia de V_HUM = %.2lf\n\n", media.lin, media.mat, media.nat, media.hum);
 
@@ -117,7 +138,35 @@ int main() {
   return 0;
 }
 
+//
+double EP(int valor, double media, double desvioPd)
+{
+	return (500 + 100( (2 * valor) - media )) / desvioPd;
+}
 
+double NF(double notaRED, double notaHUM, double notaNAT, double notaMAT, double notaLIN, int INSC, CursosPesos *cursosPesos,)
+{
+
+}
+
+//computação das notas
+void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp)
+{
+	vet = (compNotas*) calloc (n, sizeof(compNotas));
+	if (vet == NULL) printf("Nao foi possivel alocar o vetor de notas computadas\n");
+	else {
+		for (int i = 0; i < n; i++) {
+			vet[i].INSC = acertosArray[i].INS;
+			vet[i].V_LIN = EP(acertosArray[i].V_LIN, m.lin, dp.lin);
+			vet[i].V_MAT = EP(acertosArray[i].V_MAT, m.mat, dp.mat);
+			vet[i].V_NAT = EP(acertosArray[i].V_NAT, m.nat, dp.nat);
+			vet[i].V_HUM = EP(acertosArray[i].V_HUM, m.hum, dp.hum);
+			vet[i].RED = (double) acertosArray[i].RED;
+			vet[i].cota = 
+			vet[i].NotaFinal = NF()
+		}
+	}
+}
 
 
 
@@ -132,13 +181,14 @@ void leArquivosAcertos(FILE *arq, Acertos *vet, int n)
 	}
 }
 
-void lerArrayAcertos(Acertos *&vet)
+void lerArrayAcertos(Acertos *&vet, int *tamanho)
 {
 	FILE *acertos = fopen("acertos.txt", "r");
 	if(acertos == NULL) printf("Nao foi possivel abrir o arquivo acertos.txt\n");
 	else {
 		int n;
 		fscanf(acertos, "%d", &n);
+		*tamanho = n;
 		vet = (Acertos*) calloc (n, sizeof(Acertos));
 		if(vet == NULL) printf("Vetor de acertos nao pode ser alocado\n");
 		else {
@@ -158,7 +208,7 @@ void lerArquivoDados(FILE *arq, Dados *vet, int n)
 	}
 }
 
-void lerArrayDados(DadosTodosCursos *&vet)
+void lerArrayDados(DadosTodosCursos *&vet, int *tamanho)
 {
 	FILE *dados;
 	int indice = 0;
@@ -175,6 +225,7 @@ void lerArrayDados(DadosTodosCursos *&vet)
 		}
 	}
 	fclose(dados);
+	*tamanho = indice;
 }
 
 //cursos_e_vagas
@@ -186,13 +237,14 @@ void lerArquivoCursosVagas(FILE *arq, CursosVagas *vet, int n)
 	}
 }
 
-void lerArrayCursosVagas(CursosVagas *&vet)
+void lerArrayCursosVagas(CursosVagas *&vet, int *tamanho)
 {
 		FILE *cursos_e_vagas = fopen("cursos_e_vagas.txt", "r");
 		if( cursos_e_vagas == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_vagas.txt\n");
 		else {
 			int n;
 			fscanf(cursos_e_vagas, "%d", &n);
+			*tamanho = n;
 			vet = (CursosVagas*) calloc (n, sizeof(CursosVagas));
 			if (vet == NULL) printf("Nao foi possivel alocar o vetor de cursos e vagas\n");
 			else {
@@ -211,13 +263,14 @@ void lerArquivoCursosPesos(FILE *arq, CursosPesos *vet, int n)
 	}
 }
 
-void lerArrayCursosPesos(CursosPesos *&vet)
+void lerArrayCursosPesos(CursosPesos *&vet, int *tamanho)
 {
 	FILE *cursos_e_pesos = fopen("cursos_e_pesos.txt", "r");
 	if (cursos_e_pesos == NULL) printf("Nao foi possivel abrir o arquivo cursos_e_pesos.txt\n");
 	else {
 		int n;
 		fscanf(cursos_e_pesos, "%d", &n);
+		*tamanho = n;
 		vet = (CursosPesos*) calloc (n, sizeof(CursosPesos));
 		if (vet == NULL) printf("Vetor de cursos e pesos nao pode ser alocado!\n");
 		lerArquivoCursosPesos(cursos_e_pesos, vet, n);
@@ -243,6 +296,7 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 //calculo de media e desvio padrao
 void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *desvioPadrao)
 {
+	printf("%d\n\n", n);
 	media->lin = 0.0;
 	media->mat = 0.0;
 	media->nat = 0.0;
@@ -271,8 +325,14 @@ void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *de
 		desvioPadrao->hum += pow(vet[i].V_HUM - media->hum, 2);
 	}
 
-	desvioPadrao->lin = sqrt(desvioPadrao->lin / (n - 1)); 
-	desvioPadrao->mat = sqrt(desvioPadrao->mat / (n - 1));
-	desvioPadrao->nat = sqrt(desvioPadrao->nat / (n - 1));
-	desvioPadrao->hum = sqrt(desvioPadrao->hum / (n - 1));
+	desvioPadrao->lin = (sqrt(desvioPadrao->lin / (n - 1))) * 2; 
+	desvioPadrao->mat = (sqrt(desvioPadrao->mat / (n - 1))) * 2;
+	desvioPadrao->nat = (sqrt(desvioPadrao->nat / (n - 1))) * 2;
+	desvioPadrao->hum = (sqrt(desvioPadrao->hum / (n - 1))) * 2;
+
+	media->lin *= 2;
+	media->mat *= 2;
+	media->nat *= 2;
+	media->hum *= 2;
+
 }
