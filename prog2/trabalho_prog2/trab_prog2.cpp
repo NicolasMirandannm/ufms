@@ -144,13 +144,63 @@ double EP(int valor, double media, double desvioPd)
 	return (500 + 100( (2 * valor) - media )) / desvioPd;
 }
 
-double NF(double notaRED, double notaHUM, double notaNAT, double notaMAT, double notaLIN, int INSC, CursosPesos *cursosPesos,)
+void buscaCotaPorInscrito(char *&cota, int INSC, DadosTodosCursos *todosCursos)
 {
+	int indice = 0;
+	while (indice < 113) {
+		for (int i = 0; i < todosCursos[indice].num_de_candidatos; i++) {
+			if (todosCursos[indice].dadosCurso[i].num_candidato == INSC) {
+				*cota = todosCursos[indice].dadosCurso[i].tipoVaga;
+				break;
+			}
+		}
+		indice++;
+	}
+}
 
+int buscarCursoPorInscrito(DadosTodosCursos *todosCursos, int INSC)
+{
+	int indice = 0;
+	while (indice < 113) {
+		for (int i = 0; i < todosCursos[indice].num_de_candidatos; i++) {
+			if (todosCursos[indice].dadosCurso[i].num_candidato == INSC) {
+				return todosCursos[indice].cod_curso;
+			}
+		}
+		indice++;
+	}
+	return -1;
+}
+
+void buscarPesosPorInscrito(int *pr, int *ph, int *pn, int *pl, int *pm, int ins, CursosPesos *cursosPesos, int qtdCursos, DadosTodosCursos *dadosTC)
+{
+	int curso = buscarCursoPorInscrito(dadosTC, ins);
+	for (int i = 0; i < qtdCursos; i++) {
+		if (cursosPesos[i].cod == curso) {
+			*pr = cursosPesos[i].red;
+			*ph = cursosPesos[i].hum;
+			*pn = cursosPesos[i].nat;
+			*pl = cursosPesos[i].lin;
+			*pm = cursosPesos[i].mat;
+			break;
+		}
+	}
+}
+
+double NF(double notaRED, double notaHUM, double notaNAT, double notaMAT, double notaLIN, int INSC, CursosPesos *cursosPesos, int qtdCursos, DadosTodosCursos *todosCursos)
+{
+	int PR;
+	int PH;
+	int PN;
+	int PL;
+	int PM;
+	buscarPesosPorInscrito(&PR, &PH, &PN, &PL, &PM, cursosPesos, qtdCursos, todosCursos);
+
+	return ( (PR * notaRED) + (PH * notaHUM) + (PN * notaNAT) + (PL * notaLIN) + (PM * notaMAT) ) / ( PR + PH + PN + PL + PM );
 }
 
 //computação das notas
-void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp)
+void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp, CursosPesos *cursosPesos, int qtdCursos, DadosTodosCursos *todosCursos)
 {
 	vet = (compNotas*) calloc (n, sizeof(compNotas));
 	if (vet == NULL) printf("Nao foi possivel alocar o vetor de notas computadas\n");
@@ -162,11 +212,24 @@ void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, Me
 			vet[i].V_NAT = EP(acertosArray[i].V_NAT, m.nat, dp.nat);
 			vet[i].V_HUM = EP(acertosArray[i].V_HUM, m.hum, dp.hum);
 			vet[i].RED = (double) acertosArray[i].RED;
-			vet[i].cota = 
-			vet[i].NotaFinal = NF()
+			buscaCotaPorInscrito(vet[i].cota ,vet[i].INSC, todosCursos);
+			vet[i].NotaFinal = NF(vet[i].RED, vet[i].V_HUM, vet[i].V_NAT, vet[i].V_MAT, vet[i].V_LIN, vet[i].INSC, cursosPesos, qtdCursos, todosCursos);
 		}
 	}
 }
+
+
+
+// implementar os calculos de vagas
+
+
+
+
+
+
+
+
+
 
 
 
