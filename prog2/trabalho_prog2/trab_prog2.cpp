@@ -74,6 +74,8 @@ struct compNotas {
 	char cota[3];
 	double NotaFinal;
 	int classificacao;
+	int codCurso;
+	Data nasc_cand;
 };
 
 //tratamento do arquivo acertos.txt
@@ -99,8 +101,16 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *desvioPadrao);
 
 //criação de um array para computaçaõ e lançamento de nota de cada inscrito
-void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp);
+void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp, CursosPesos *cursosPesos, int qtdCursos, DadosTodosCursos *todosCursos);
 double EP(int valor, double media, double desvioPd);
+
+// metodos de ordenação
+void troca(compNotas *q, compNotas *p);
+int separa(int p, int r, compNotas *v);
+void quickSort(int p, int r, compNotas *vet);
+void ordenaPorPrioridades(compNotas *vet, int n);
+void imprimeInscritos(compNotas *vetor, int n);
+void classificaInscritos(compNotas *notasOrd, int n_notas, CursosVagas *vagas);
 
 
 int main() {
@@ -127,13 +137,17 @@ int main() {
 	struct MediaEdp media, desvioPadrao;
 	calcMediaAndDesvioPadrao(acertosArray, N_A, &media, &desvioPadrao);
 
-	printf("media de V_LIN = %.2lf\nmedia de V_MAT = %.2lf\nmedia de V_NAT = %.2lf\nmedia de V_HUM = %.2lf\n\n", media.lin, media.mat, media.nat, media.hum);
+	struct compNotas *notasCandidatos;
+	computarNotas(notasCandidatos, N_A, acertosArray, media, desvioPadrao, cursosPesosArray, N_CP, dadosTodosCursosArray);
 
-	printf("desvioPadrao de V_LIN = %.2lf\ndesvioPadrao de V_MAT = %.2lf\ndesvioPadrao de V_NAT = %.2lf\ndesvioPadrao de V_HUM = %.2lf\n\n", desvioPadrao.lin, desvioPadrao.mat, desvioPadrao.nat, desvioPadrao.hum);
+	quickSort(0, N_A-1, notasCandidatos);
+	ordenaPorPrioridades(notasCandidatos, N_A);
 
+	classificaInscritos(notasCandidatos, N_A, cursosVagasArray);
 
+	imprimeInscritos(notasCandidatos, N_A);
 
-
+	free(notasCandidatos);
 	desalocaTodosArrays(acertosArray, dadosTodosCursosArray, cursosVagasArray, cursosPesosArray);
   return 0;
 }
@@ -141,16 +155,21 @@ int main() {
 //
 double EP(int valor, double media, double desvioPd)
 {
-	return (500 + 100( (2 * valor) - media )) / desvioPd;
+	return (500 + 100 * (((2 * valor) - media )) / desvioPd);
 }
 
-void buscaCotaPorInscrito(char *&cota, int INSC, DadosTodosCursos *todosCursos)
+void buscaCotaPorInscrito(DadosTodosCursos *todosCursos, compNotas *inscrito)
 {
 	int indice = 0;
-	while (indice < 113) {
+	while (indice <= 113) {
 		for (int i = 0; i < todosCursos[indice].num_de_candidatos; i++) {
-			if (todosCursos[indice].dadosCurso[i].num_candidato == INSC) {
-				*cota = todosCursos[indice].dadosCurso[i].tipoVaga;
+			if (todosCursos[indice].dadosCurso[i].num_candidato == inscrito->INSC) {			
+				// printf("%d %d %s\n", todosCursos[indice].cod_curso, todosCursos[indice].dadosCurso[i].num_candidato, todosCursos[indice].dadosCurso[i].tipoVaga);
+				strcpy(inscrito->cota, todosCursos[indice].dadosCurso[i].tipoVaga);
+				inscrito->codCurso = todosCursos[indice].cod_curso;
+				inscrito->nasc_cand.dia = todosCursos[indice].dadosCurso[i].nascimento.dia;
+				inscrito->nasc_cand.mes = todosCursos[indice].dadosCurso[i].nascimento.mes;
+				inscrito->nasc_cand.ano = todosCursos[indice].dadosCurso[i].nascimento.ano;
 				break;
 			}
 		}
@@ -161,7 +180,7 @@ void buscaCotaPorInscrito(char *&cota, int INSC, DadosTodosCursos *todosCursos)
 int buscarCursoPorInscrito(DadosTodosCursos *todosCursos, int INSC)
 {
 	int indice = 0;
-	while (indice < 113) {
+	while (indice <= 113) {
 		for (int i = 0; i < todosCursos[indice].num_de_candidatos; i++) {
 			if (todosCursos[indice].dadosCurso[i].num_candidato == INSC) {
 				return todosCursos[indice].cod_curso;
@@ -194,7 +213,7 @@ double NF(double notaRED, double notaHUM, double notaNAT, double notaMAT, double
 	int PN;
 	int PL;
 	int PM;
-	buscarPesosPorInscrito(&PR, &PH, &PN, &PL, &PM, cursosPesos, qtdCursos, todosCursos);
+	buscarPesosPorInscrito(&PR, &PH, &PN, &PL, &PM, INSC, cursosPesos, qtdCursos, todosCursos);
 
 	return ( (PR * notaRED) + (PH * notaHUM) + (PN * notaNAT) + (PL * notaLIN) + (PM * notaMAT) ) / ( PR + PH + PN + PL + PM );
 }
@@ -202,6 +221,9 @@ double NF(double notaRED, double notaHUM, double notaNAT, double notaMAT, double
 //computação das notas
 void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, MediaEdp dp, CursosPesos *cursosPesos, int qtdCursos, DadosTodosCursos *todosCursos)
 {
+	int teste = 0;
+	int codigo_do_curso;
+	int dia, mes, ano;
 	vet = (compNotas*) calloc (n, sizeof(compNotas));
 	if (vet == NULL) printf("Nao foi possivel alocar o vetor de notas computadas\n");
 	else {
@@ -212,24 +234,11 @@ void computarNotas(compNotas *&vet, int n, Acertos *acertosArray, MediaEdp m, Me
 			vet[i].V_NAT = EP(acertosArray[i].V_NAT, m.nat, dp.nat);
 			vet[i].V_HUM = EP(acertosArray[i].V_HUM, m.hum, dp.hum);
 			vet[i].RED = (double) acertosArray[i].RED;
-			buscaCotaPorInscrito(vet[i].cota ,vet[i].INSC, todosCursos);
+			buscaCotaPorInscrito(todosCursos, &vet[i]);
 			vet[i].NotaFinal = NF(vet[i].RED, vet[i].V_HUM, vet[i].V_NAT, vet[i].V_MAT, vet[i].V_LIN, vet[i].INSC, cursosPesos, qtdCursos, todosCursos);
 		}
 	}
 }
-
-
-
-// implementar os calculos de vagas
-
-
-
-
-
-
-
-
-
 
 
 
@@ -359,7 +368,6 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 //calculo de media e desvio padrao
 void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *desvioPadrao)
 {
-	printf("%d\n\n", n);
 	media->lin = 0.0;
 	media->mat = 0.0;
 	media->nat = 0.0;
@@ -398,4 +406,154 @@ void calcMediaAndDesvioPadrao(Acertos *vet, int n, MediaEdp *media, MediaEdp *de
 	media->nat *= 2;
 	media->hum *= 2;
 
+}
+
+void troca(compNotas *q, compNotas *p)
+{
+	struct compNotas aux;
+	aux = *q;
+	*q = *p;
+	*p = aux;
+}
+
+int separa(int p, int r, compNotas *v)
+{
+	int i, j;
+	struct compNotas x = v[p];
+	i = p - 1;
+	j = r + 1;
+	while (1) {
+		do {
+			j--;
+		} while(v[j].NotaFinal < x.NotaFinal);
+		do {
+			i++;
+		} while (v[i].NotaFinal > x.NotaFinal);
+		if( i < j)
+			troca(&v[i], &v[j]);
+		else
+			return j;
+	}
+}
+
+void quickSort(int p, int r, compNotas *vet)
+{
+	int q;
+	if (p < r) {
+		q = separa(p, r, vet);
+		quickSort(p, q, vet);
+		quickSort(q+1, r, vet);
+	}
+}
+
+void ordenaPorPrioridades(compNotas *vet, int n)
+{
+	int min;
+	for (int i = 0; i < n; i++) {
+		min = i;
+		for(int j = i+1; j < n; j++) {
+
+			if (vet[i].NotaFinal == vet[j].NotaFinal && vet[i].codCurso == vet[j].codCurso) {
+				if ( vet[j].nasc_cand.ano <= 1962 ) {
+					if( vet[i].nasc_cand.ano > vet[j].nasc_cand.ano) {
+						min = j;
+					}
+				} 
+				else {
+					if (vet[i].RED < vet[j].RED) {min = j;}
+					else {
+						if (vet[i].V_LIN < vet[j].V_LIN) {min = j;}
+						else {
+							if (vet[i].V_MAT < vet[j].V_MAT){ min = j;}
+							else {
+								if (vet[i].V_HUM < vet[j].V_HUM){ min = j;}
+								else
+									if (vet[i].V_NAT < vet[j].V_NAT) {min = j;}
+							}
+						}
+					}
+				}
+			}
+		}
+		troca(&vet[i], &vet[min]);
+	}
+}
+
+void imprimeInscritos(compNotas *vetor, int n)
+{
+	for (int i = 0; i < n; i++) {
+		printf("%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d %d %d/%d/%d\n", vetor[i].INSC, vetor[i].V_LIN, vetor[i].V_MAT, vetor[i].V_NAT, 
+			vetor[i].V_HUM, vetor[i].RED, vetor[i].cota, vetor[i].NotaFinal, vetor[i].classificacao, vetor[i].codCurso, vetor[i].nasc_cand.dia, 
+			vetor[i].nasc_cand.mes, vetor[i].nasc_cand.ano);
+	}
+}
+
+void classificaInscritos(compNotas *notasOrd, int n_notas, CursosVagas *vagas)
+{
+	int ac, l1, l3, l4, l5, l7, l8, l9, l11, l13, l15;
+	for (int i = 0; i < 113; i++) {
+		ac = 1;
+		l1 = 1;
+		l3 = 1;
+		l4 = 1;
+		l5 = 1;
+		l7 = 1;
+		l8 = 1;
+		l9 = 1;
+		l11 = 1;
+		l13 = 1;
+		l15 = 1;
+
+		for (int j = 0; j < n_notas; j++) {
+			if ( notasOrd[j].codCurso == vagas[i].cod) {
+				if ( strcmp(notasOrd[j].cota, "AC") == 0 && ac <= vagas[i].AC) {
+					notasOrd[j].classificacao = ac;
+					ac++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L1") == 0 && ac <= vagas[i].L1) {
+					notasOrd[j].classificacao = l1;
+					l1++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L3") == 0 && ac <= vagas[i].L3 ) {
+					notasOrd[j].classificacao = l3;
+					l3++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L4") == 0 && ac <= vagas[i].L4 ) {
+					notasOrd[j].classificacao = l4;
+					l4++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L5") == 0 && ac <= vagas[i].L5 ) {
+					notasOrd[j].classificacao = l5;
+					l5++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L7") == 0 && ac <= vagas[i].L7 ) {
+					notasOrd[j].classificacao = l7;
+					l7++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L8") == 0 && ac <= vagas[i].L8 ) {
+					notasOrd[j].classificacao = l8;
+					l8++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L9") == 0 && ac <= vagas[i].L9 ) {
+					notasOrd[j].classificacao = l9;
+					l9++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L11") == 0 && ac <= vagas[i].L11 ) {
+					notasOrd[j].classificacao = l11;
+					l11++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L13") == 0 && ac <= vagas[i].L13 ) {
+					notasOrd[j].classificacao = l13;
+					l13++;
+				}
+				else if (strcmp(notasOrd[j].cota, "L15") == 0 && ac <= vagas[i].L15 ) {
+					notasOrd[j].classificacao = l15;
+					l15++;
+				}
+				else {
+					notasOrd[j].classificacao = 0;
+				}
+			}
+		}
+	}
 }

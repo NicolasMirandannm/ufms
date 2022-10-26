@@ -1,43 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 
-#define length(x) (int) (sizeof(x) / sizeof (x[0])) 
-
-struct Data
+void lerTexto(char *teste, char *teste1)
 {
-	int dia;
-	int mes;
-	int ano;
-};
-
-
-
-void teste(Data *data)
-{
-	data->dia = 0;
-	for (int i = 0; i < 5; i++) {
-		data->dia += 1;
-	}
-	data->dia /= 2;
-}
-
-void tes(int *teste) {
-	printf("%d\n", length(teste));
+	// while (*teste1 != '\0') {
+	// 	*teste = *teste1;
+	// 	++teste1;
+	// 	++teste;
+	// }
+	strcpy(teste, teste1);
 }
 
 int main() {
-	Data test;
-	teste(&test);
-	printf("%d %d %d\n", test.dia, test.mes, test.ano);
-
-	int a[19];
-	int n = length(a);
-
-	int z = 2;
-
-	printf("%d\n", (int)pow(z, 10));
-
-	printf("tamanho do vetor 'a': %d\n", n);
+	
+	char teste1[] = "hello world";
+	char teste[20];
+	lerTexto(teste, teste1);
+	printf("%s\n", teste);
 	return 0;
 }
