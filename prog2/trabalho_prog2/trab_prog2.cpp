@@ -112,6 +112,11 @@ void ordenaPorPrioridades(compNotas *vet, int n);
 void imprimeInscritos(compNotas *vetor, int n);
 void classificaInscritos(compNotas *notasOrd, int n_notas, CursosVagas *vagas);
 
+// gerando arquivo ordenado
+void trocaTeste(CursosPesos *a, CursosPesos *b);
+int separadorCursos(int p, int r, CursosPesos *v);
+void quickSortCursoPorCod(int p, int r, CursosPesos *v);
+void gerarArquivoDosClassificadosPorNota(char *nomeArq, compNotas *inscritos, int qtd_insc, CursosPesos *cursos, int qtd_cursos);
 
 int main() {
 	struct CursosVagas *cursosVagasArray;
@@ -142,10 +147,18 @@ int main() {
 
 	quickSort(0, N_A-1, notasCandidatos);
 	ordenaPorPrioridades(notasCandidatos, N_A);
-
 	classificaInscritos(notasCandidatos, N_A, cursosVagasArray);
 
 	imprimeInscritos(notasCandidatos, N_A);
+
+	
+	quickSortCursoPorCod(0, N_CP-1, cursosPesosArray);
+	// printf("%d %d\n\n", cursosPesosArray[0].cod, cursosPesosArray[1].cod);
+
+	// char arqName[40];
+	// scanf("%[^\n]", arqName);
+
+	// gerarArquivoDosClassificadosPorNota(arqName, notasCandidatos, N_A, cursosPesosArray, N_CP);
 
 	free(notasCandidatos);
 	desalocaTodosArrays(acertosArray, dadosTodosCursosArray, cursosVagasArray, cursosPesosArray);
@@ -183,19 +196,19 @@ int buscarCursoPorInscrito(DadosTodosCursos *todosCursos, int INSC)
 	while (indice <= 113) {
 		for (int i = 0; i < todosCursos[indice].num_de_candidatos; i++) {
 			if (todosCursos[indice].dadosCurso[i].num_candidato == INSC) {
+
 				return todosCursos[indice].cod_curso;
 			}
 		}
 		indice++;
 	}
-	return -1;
 }
 
 void buscarPesosPorInscrito(int *pr, int *ph, int *pn, int *pl, int *pm, int ins, CursosPesos *cursosPesos, int qtdCursos, DadosTodosCursos *dadosTC)
 {
 	int curso = buscarCursoPorInscrito(dadosTC, ins);
 	for (int i = 0; i < qtdCursos; i++) {
-		if (cursosPesos[i].cod == curso) {
+				if (cursosPesos[i].cod == curso) {
 			*pr = cursosPesos[i].red;
 			*ph = cursosPesos[i].hum;
 			*pn = cursosPesos[i].nat;
@@ -357,7 +370,7 @@ void desalocaTodosArrays(Acertos *acertos, DadosTodosCursos *dadosTodosCursos, C
 {
 	free(acertos);
 
-	for (int i = 0; i < 113; i++) {
+	for (int i = 0; i <= 113; i++) {
 		free(dadosTodosCursos[i].dadosCurso);
 	}
 	free(dadosTodosCursos);
@@ -481,11 +494,16 @@ void ordenaPorPrioridades(compNotas *vet, int n)
 
 void imprimeInscritos(compNotas *vetor, int n)
 {
+	
 	for (int i = 0; i < n; i++) {
+		if (vetor[i].INSC == 554840) {
 		printf("%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d %d %d/%d/%d\n", vetor[i].INSC, vetor[i].V_LIN, vetor[i].V_MAT, vetor[i].V_NAT, 
 			vetor[i].V_HUM, vetor[i].RED, vetor[i].cota, vetor[i].NotaFinal, vetor[i].classificacao, vetor[i].codCurso, vetor[i].nasc_cand.dia, 
 			vetor[i].nasc_cand.mes, vetor[i].nasc_cand.ano);
+		}
+	
 	}
+	printf("\n\n%d\n", n);
 }
 
 void classificaInscritos(compNotas *notasOrd, int n_notas, CursosVagas *vagas)
@@ -505,48 +523,50 @@ void classificaInscritos(compNotas *notasOrd, int n_notas, CursosVagas *vagas)
 		l15 = 1;
 
 		for (int j = 0; j < n_notas; j++) {
+
 			if ( notasOrd[j].codCurso == vagas[i].cod) {
+
 				if ( strcmp(notasOrd[j].cota, "AC") == 0 && ac <= vagas[i].AC) {
 					notasOrd[j].classificacao = ac;
 					ac++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L1") == 0 && ac <= vagas[i].L1) {
+				else if (strcmp(notasOrd[j].cota, "L1") == 0 && l1 <= vagas[i].L1) {
 					notasOrd[j].classificacao = l1;
 					l1++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L3") == 0 && ac <= vagas[i].L3 ) {
+				else if (strcmp(notasOrd[j].cota, "L3") == 0 && l3 <= vagas[i].L3 ) {
 					notasOrd[j].classificacao = l3;
 					l3++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L4") == 0 && ac <= vagas[i].L4 ) {
+				else if (strcmp(notasOrd[j].cota, "L4") == 0 && l4 <= vagas[i].L4 ) {
 					notasOrd[j].classificacao = l4;
 					l4++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L5") == 0 && ac <= vagas[i].L5 ) {
+				else if (strcmp(notasOrd[j].cota, "L5") == 0 && l5 <= vagas[i].L5 ) {
 					notasOrd[j].classificacao = l5;
 					l5++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L7") == 0 && ac <= vagas[i].L7 ) {
+				else if (strcmp(notasOrd[j].cota, "L7") == 0 && l7 <= vagas[i].L7 ) {
 					notasOrd[j].classificacao = l7;
 					l7++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L8") == 0 && ac <= vagas[i].L8 ) {
+				else if (strcmp(notasOrd[j].cota, "L8") == 0 && l8 <= vagas[i].L8 ) {
 					notasOrd[j].classificacao = l8;
 					l8++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L9") == 0 && ac <= vagas[i].L9 ) {
+				else if (strcmp(notasOrd[j].cota, "L9") == 0 && l9 <= vagas[i].L9 ) {
 					notasOrd[j].classificacao = l9;
 					l9++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L11") == 0 && ac <= vagas[i].L11 ) {
+				else if (strcmp(notasOrd[j].cota, "L11") == 0 && l11 <= vagas[i].L11 ) {
 					notasOrd[j].classificacao = l11;
 					l11++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L13") == 0 && ac <= vagas[i].L13 ) {
+				else if (strcmp(notasOrd[j].cota, "L13") == 0 && l13 <= vagas[i].L13 ) {
 					notasOrd[j].classificacao = l13;
 					l13++;
 				}
-				else if (strcmp(notasOrd[j].cota, "L15") == 0 && ac <= vagas[i].L15 ) {
+				else if (strcmp(notasOrd[j].cota, "L15") == 0 && l15 <= vagas[i].L15 ) {
 					notasOrd[j].classificacao = l15;
 					l15++;
 				}
@@ -555,5 +575,180 @@ void classificaInscritos(compNotas *notasOrd, int n_notas, CursosVagas *vagas)
 				}
 			}
 		}
+	}
+}
+
+void ordenaAlfabetico(compNotas *inscritos, int n)
+{
+	compNotas aux;
+	int min;
+	for (int i = 0; i < n; i++) {
+		min = i;
+		for (int j = i+1; j < n; j++) {
+			if (strcmp(inscritos[i].cota, inscritos[j].cota) > 0 ) {
+				min = j;
+			}
+		}
+		aux = inscritos[i];
+		inscritos[i] = inscritos[min];
+		inscritos[min] = aux;
+	}
+
+}
+
+void gerarArquivoDosClassificadosPorNota(char *nomeArq, compNotas *inscritos, int qtd_insc, CursosPesos *cursos, int qtd_cursos)
+{
+	FILE *arq = fopen(nomeArq, "a");
+	if (arq == NULL) printf("Ñao foi possivel abrir o arquivo, verifique se o nome digitado contem .txt no final\n");
+	else 
+	{
+		// ordenaAlfabetico(inscritos, qtd_insc);
+		fprintf(arq, "/*LISTA GERAL CLASSIFICADO POR NOTA*/\n");
+		for (int i = 0; i < qtd_cursos; i++) {
+			fprintf(arq, "\n%d   %s\n", cursos[i].cod, cursos[i].nomeCurso);
+			fprintf(arq, "\n");
+			fprintf(arq, "INSC   V_LIN  V_MAT  V_NAT  V_HUM  RED  COTA NOTA FINAL CLASSIFICAÇÃO\n");
+			
+			// if (cursos[i].AC > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "AC") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L1") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L3") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L4") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L5") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L7") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L8") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L9") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L11") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L13") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+			
+			// if (cursos[i].L1 > 0) {
+				for (int j = 0; j < qtd_insc; j++) {
+					if (inscritos[j].codCurso == cursos[i].cod && strcmp(inscritos[j].cota, "L15") == 0 && inscritos[j].classificacao != 0) {
+						fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[j].INSC, inscritos[j].V_LIN, inscritos[j].V_MAT, inscritos[j].V_NAT, 
+						inscritos[j].V_HUM, inscritos[j].RED, inscritos[j].cota, inscritos[j].NotaFinal, inscritos[j].classificacao);
+					}
+				}
+			// }
+
+		}
+	}
+
+}
+
+void trocaTeste(CursosPesos *a, CursosPesos *b)
+{
+	struct CursosPesos aux = *a;
+	*a = *b;
+	*b = aux;
+}
+
+int separadorCursos(int p, int r, CursosPesos *v)
+{
+	struct CursosPesos x;
+	int i, j;
+	x = v[p];
+	i = p - 1;
+	j = r + 1;
+
+	while (1) {
+		do {
+			j--;
+		} while (v[j].cod > x.cod);
+		do {
+			i++;
+		} while (v[i].cod < x.cod);
+
+		if ( i < j)
+			trocaTeste(&v[i], &v[j]);
+		else
+			return j;
+	}
+}
+
+void quickSortCursoPorCod(int p, int r, CursosPesos *v)
+{ 
+	int q;
+	if (p < r) {
+		q = separadorCursos(p, r, v);
+		quickSortCursoPorCod(p, q, v);
+		quickSortCursoPorCod(q+1, r, v);
 	}
 }
