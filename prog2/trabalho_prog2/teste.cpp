@@ -2,6 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+struct CursosPesos {
+  int cod;
+  char nomeCurso[50];
+  int red;
+  int mat;
+  int lin;
+  int hum;
+  int nat;
+};
+
 struct compNotas {
 	int INSC;
 	double V_LIN;
@@ -13,8 +24,51 @@ struct compNotas {
 	double NotaFinal;
 	int classificacao;
 	int codCurso;
+	char nome[80];
 	Data nasc_cand;
 };
+
+struct AjustesRED
+{
+	int insc;
+	double nota1, nota2;
+};
+
+struct Acertos {
+	int INS;
+	int V_LIN;
+	int V_MAT;
+	int V_NAT;
+	int V_HUM;
+	double RED;
+};
+
+
+
+void alterarNotasRed(char *arqName, Acertos *alunos, int n)
+{
+	FILE *arq = fopen(arqName, "r");
+	if (arq == NULL) printf("Arquivo %s nao pode ser aberto\n", arqName);
+	else
+	{
+		int tam;
+		struct AjustesRED candidato;
+		fscanf(arq, "%d", &tam);
+		for(int i = 0; i < tam; i++) {
+			fscanf(arq, "%d %lf %lf", &candidato.insc, &candidato.nota1, &candidato.nota2);
+			for (int j = 0; j < n; j++) {
+				if (alunos[j].INS == candidato.insc) {
+					printf("%d %.2lf\n", alunos[j].INS, alunos[j].RED);
+					alunos[j]->RED = candidato.nota2;
+					printf("%d %.2lf\n\n", alunos[j].INS, alunos[j].RED);
+				}
+			}
+		}
+	}
+}
+
+
+
 
 void menu(bool op_0);
 
@@ -101,89 +155,3 @@ void menu(bool op_0)
 	printf("\n\n");
 	
 }
-
-// ARRAY DE CURSOSPESOS ORDENADO
-void ordenaAlfabetico(compNotas *inscritos, int n)
-{
-	compNotas aux;
-	int min;
-	for (int i = 0; i < n; i++) {
-		min = i;
-		for (int j = i+1; j < n; j++) {
-			if (strcmp(inscritos[i].cota, inscritos[j].cota) > 0 ) {
-				min = j;
-			}
-		}
-		aux = inscritos[i];
-		inscritos[i] = inscritos[min];
-		inscritos[min] = aux;
-	}
-
-}
-
-void gerarArquivoDosClassificadosPorNota(char *nomeArq, compNotas *inscritos, int qtd_insc, CursosPesos *cursos, int qtd_cursos)
-{
-	FILE *arq = fopen(nomeArq, "a");
-	if (arq == NULL) printf("Ñao foi possivel abrir o arquivo, verifique se o nome digitado contem .txt no final\n");
-	else 
-	{
-		ordenaAlfabetico(inscritos, qtd_insc);
-		fprintf(arq, "/*LISTA GERAL CLASSIFICADO POR NOTA*/\n");
-		for (int i = 0; i < qtd_cursos; i++) {
-			fprintf(arq, "%d   %s\n", cursos[i].cod, cursos[i].nomeCurso);
-			fprintf(arq, "\n");
-			fprintf(arq, "INSC V_LIN V_MAT V_NAT V_HUM RED COTA NOTA FINAL CLASSIFICAÇÃO");
-			
-			for (int j = 0; j < qtd_insc; j++) {
-				if (inscritos[j].codCurso == cursos[i].cod) {
-					printf("%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d\n", inscritos[i].INSC, inscritos[i].V_LIN, inscritos[i].V_MAT, inscritos[i].V_NAT, 
-					inscritos[i].V_HUM, inscritos[i].RED, inscritos[i].cota, inscritos[i].NotaFinal, inscritos[i].classificacao);
-				}
-			}
-
-		}
-	}
-
-}
-
-// int qtdInscritosPorCurso(DadosTodosCursos *vet, int cod)
-// {
-// 	for (int j = 0; j <= 113; j++) {
-// 		if (cursosDados[j].cod_curso == cod) {
-// 			return cursosDados[j].num_de_candidatos;
-// 		}
-// 	}
-// }
-
-// void imprimeNotaOrdenado(FILE *arq, compNotas *todosInsc, int cod_curso, int numCand, int n_cd)
-// {
-// 	compNotas *aux;
-// 	int i = 0;
-// 	aux = (compNotas*) calloc (numCand, sizeof(compNotas));
-// 	if (aux == NULL) printf("Vetor de compNotas para impressao nao pode ser alocado.\n");
-// 	else {
-// 		for (int x = 0; x < n_cd; x++) {
-// 			if (todosInsc[i].cod_curso == cod_curso) {
-// 				aux[i] = todosInsc[x];
-// 				i++;
-// 			}
-// 		}
-
-// 		ordenaAlfabetico(aux, numCand);
-
-// 		for (int x = 0; x < numCand; x++) {
-// 			fprintf(arq, "%d %.2lf %.2lf %.2lf %.2lf %.2lf %s %.2lf %d",
-// 				aux[x].INSC,
-// 				aux[x].V_LIN,
-// 				aux[x].V_MAT,
-// 				aux[x].V_NAT,
-// 				aux[x].V_HUM,
-// 				aux[x].RED,
-// 				aux[x].cota,
-// 				aux[x].NotaFinal,
-// 				aux[x].classificacao);
-// 		}
-// 		free(aux);
-// 	}
-// }
-
